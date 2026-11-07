@@ -294,11 +294,7 @@ const handleCopyUpi = async () => {
 
           <button
             className="bag-button"
-            onClick={() =>
-              alert(
-                "Thank you for supporting PDFShelf. Optional contributions will be available soon."
-              )
-            }
+            onClick={() => setIsSupportOpen(true)}
           >
             <ShoppingBag size={17} />
             <span>Support PDFShelf</span>
