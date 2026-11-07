@@ -11,7 +11,6 @@ import {
   Plus,
   Bell,
   Menu,
-  TrendingUp,
   IndianRupee,
   Package,
   Download,
