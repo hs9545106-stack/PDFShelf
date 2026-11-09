@@ -12,8 +12,10 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
     "lucide-react": "^1.66.0",
+    "pdfjs-dist": "^6.5.438",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-pageflip": "^2.0.3",
     "react-router-dom": "^7.18.5"
   },
   "devDependencies": {

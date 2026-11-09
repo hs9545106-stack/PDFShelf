@@ -1,5 +1,6 @@
 
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   ShoppingBag,
@@ -60,6 +61,7 @@ const coverStyles = [
 ];
 
 function Storefront() {
+  const navigate = useNavigate();
   const UPI_ID = "pdfshelfsupport@axl";
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -302,7 +304,7 @@ const handleCopyUpi = async () => {
 
           <button
             className="mobile-menu-button"
-            onClick={() => setIsSupportOpen(true)}
+            onClick={() => setMobileMenu((current) => !current)}
             aria-label="Toggle menu"
           >
             {mobileMenu ? <X /> : <Menu />}
@@ -585,18 +587,27 @@ const handleCopyUpi = async () => {
                       <span>{product.author}</span>
                     </div>
 
-                    <div className="product-bottom">
+                    <div className="product-bottom pdf-product-actions">
                       <div className="product-price">
                         <strong>Free</strong>
                         <small>No payment required</small>
                       </div>
 
-                      <button
-                        className="view-button"
-                        onClick={() => setSelected(product)}
-                      >
-                        View <ArrowRight size={15} />
-                      </button>
+                      <div className="pdf-card-buttons">
+                        <button
+                          className="view-button pdf-read-button"
+                          onClick={() => navigate(`/read/${product.id}`)}
+                        >
+                          <BookOpen size={15} /> Read Online
+                        </button>
+                        <button
+                          className="view-button pdf-download-button"
+                          onClick={() => handleFreeDownload(product)}
+                          disabled={isDownloading}
+                        >
+                          <Download size={15} /> Download PDF
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -747,6 +758,15 @@ const handleCopyUpi = async () => {
               <div className="modal-price">
                 <strong>Free to download</strong>
               </div>
+
+              {/* Read the PDF online in the built-in reader */}
+              <button
+                className="view-button pdf-modal-read"
+                onClick={() => navigate(`/read/${selected.id}`)}
+              >
+                <BookOpen size={17} />
+                Read Online
+              </button>
 
               {/* Actual free PDF download */}
               <button
