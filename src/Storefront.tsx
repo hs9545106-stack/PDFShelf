@@ -70,6 +70,7 @@ function Storefront() {
   const [selected, setSelected] = useState<Product | null>(null);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
@@ -286,13 +287,18 @@ const handleCopyUpi = async () => {
         </nav>
 
         <div className="nav-actions">
-          <button className="icon-button" aria-label="Wishlist">
-            <Heart size={19} />
+<button
+  className="icon-button"
+  aria-label="Open wishlist"
+  title="My Wishlist"
+  onClick={() => setIsWishlistOpen(true)}
+>
+  <Heart size={19} />
 
-            {wishlist.length > 0 && (
-              <span className="count">{wishlist.length}</span>
-            )}
-          </button>
+  {wishlist.length > 0 && (
+    <span className="count">{wishlist.length}</span>
+  )}
+</button>
 
           <button
             className="bag-button"
@@ -805,6 +811,165 @@ const handleCopyUpi = async () => {
           </div>
         </div>
 
+      )}
+
+      {/* Wishlist popup */}
+      {isWishlistOpen && (
+        <div
+          className="modal-overlay"
+          onClick={() => setIsWishlistOpen(false)}
+        >
+          <div
+            className="product-modal wishlist-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "520px",
+              width: "100%",
+              maxHeight: "85vh",
+              overflowY: "auto",
+              padding: "28px",
+            }}
+          >
+            <button
+              className="modal-close"
+              onClick={() => setIsWishlistOpen(false)}
+              aria-label="Close wishlist"
+            >
+              <X size={21} />
+            </button>
+
+            <div className="section-kicker">YOUR COLLECTION</div>
+            <h2 style={{ marginBottom: "8px" }}>
+              My Wishlist <Heart size={20} fill="currentColor" />
+            </h2>
+            <p style={{ color: "#697386", marginBottom: "22px" }}>
+              {wishlist.length} saved{" "}
+              {wishlist.length === 1 ? "PDF" : "PDFs"}
+            </p>
+
+            {wishlist.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "35px 15px",
+                  color: "#697386",
+                }}
+              >
+                <Heart size={38} style={{ marginBottom: "12px" }} />
+                <h3>Your Wishlist is empty</h3>
+                <p>Like a PDF to save it here for later.</p>
+                <button
+                  className="primary-button"
+                  style={{ marginTop: "15px" }}
+                  onClick={() => setIsWishlistOpen(false)}
+                >
+                  Explore PDFs
+                </button>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "14px",
+                }}
+              >
+                {products
+                  .filter((product) => wishlist.includes(product.id))
+                  .map((product) => (
+                    <div
+                      key={product.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "14px",
+                        padding: "12px",
+                        border: "1px solid #e9e5ef",
+                        borderRadius: "14px",
+                        background: "#fff",
+                      }}
+                    >
+                      <div
+                        className={`cover-${product.color}`}
+                        style={{
+                          width: "58px",
+                          height: "76px",
+                          flexShrink: 0,
+                          borderRadius: "7px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden",
+                          backgroundImage: product.coverImageUrl
+                            ? `url("${product.coverImageUrl}")`
+                            : undefined,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                      >
+                        {!product.coverImageUrl && (
+                          <span style={{ fontSize: "24px" }}>
+                            {product.icon}
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <strong
+                          style={{
+                            display: "block",
+                            color: "#17243b",
+                            fontSize: "14px",
+                            marginBottom: "5px",
+                          }}
+                        >
+                          {product.title}
+                        </strong>
+                        <small style={{ color: "#697386" }}>
+                          {product.category} ·{" "}
+                          {product.pages
+                            ? `${product.pages} pages`
+                            : product.language}
+                        </small>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "8px",
+                            marginTop: "10px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <button
+                            className="view-button"
+                            style={{ padding: "7px 11px", fontSize: "12px" }}
+                            onClick={() => {
+                              setIsWishlistOpen(false);
+                              setSelected(product);
+                            }}
+                          >
+                            View details
+                          </button>
+                          <button
+                            className="view-button"
+                            style={{
+                              padding: "7px 11px",
+                              fontSize: "12px",
+                              color: "#b34b61",
+                            }}
+                            onClick={() => toggleWishlist(product.id)}
+                          >
+                            <Heart size={13} fill="currentColor" />
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {isSupportOpen && (
