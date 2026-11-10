@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter,
   Routes,
@@ -7,6 +6,7 @@ import {
 } from "react-router-dom";
 
 import Storefront from "./Storefront";
+import Reader from "./Reader";
 import Admin from "./Admin";
 import AdminLogin from "./AdminLogin";
 import AdminRoute from "./AdminRoute";
@@ -18,11 +18,11 @@ function App() {
         {/* Customer storefront */}
         <Route path="/" element={<Storefront />} />
 
+        {/* Online PDF reader */}
+        <Route path="/read/:productId" element={<Reader />} />
+
         {/* Admin login */}
-        <Route
-          path="/admin/login"
-          element={<AdminLogin />}
-        />
+        <Route path="/admin/login" element={<AdminLogin />} />
 
         {/* Protected admin dashboard */}
         <Route
@@ -35,10 +35,7 @@ function App() {
         />
 
         {/* Unknown routes */}
-        <Route
-          path="*"
-          element={<Navigate to="/" replace />}
-        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
