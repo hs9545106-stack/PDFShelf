@@ -51,10 +51,9 @@ a { text-decoration: none; color: inherit; }
   width: 36px;
   height: 36px;
   border-radius: 11px;
-  background: #242a45;
-  color: #fff;
-  display: grid;
-  place-items: center;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
 }
 
 .brand-light { color: #8c81b5; }
@@ -1000,4 +999,12 @@ a { text-decoration: none; color: inherit; }
     font-size: 12px;
     padding: 10px 12px;
   }
+}
+/* PDF Reader Logo */
+.pdf-reader-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
 }

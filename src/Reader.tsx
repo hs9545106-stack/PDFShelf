@@ -20,7 +20,6 @@ import {
   Minimize,
   ZoomIn,
   ZoomOut,
-  BookOpen,
   LoaderCircle,
   RefreshCw,
 } from "lucide-react";
@@ -297,9 +296,13 @@ export default function Reader() {
         </button>
 
         <div className="pdf-reader-brand">
-          <BookOpen size={20} />
-          PDF<span>Shelf</span>
-        </div>
+  <img
+    src="/pdfshelf-icon.png"
+    alt="PDFShelf"
+    className="pdf-reader-logo"
+  />
+  PDF<span>Shelf</span>
+</div>
 
         <button
           type="button"
@@ -352,7 +355,11 @@ export default function Reader() {
         {/* Error */}
         {!loading && error && (
           <div className="pdf-reader-status pdf-reader-error">
-            <BookOpen size={34} />
+            <img
+  src="/pdfshelf-icon.png"
+  alt="PDFShelf"
+  className="pdf-reader-logo"
+/>
 
             <h2>We couldn't open this PDF</h2>
 

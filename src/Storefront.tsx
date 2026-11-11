@@ -259,14 +259,16 @@ const handleCopyUpi = async () => {
       {/* Navigation */}
       <header className="navbar">
         <a href="#" className="brand">
-          <span className="brand-icon">
-            <BookOpen size={21} />
-          </span>
+  <img
+    src="/pdfshelf-icon.png"
+    alt="PDFShelf icon"
+    className="brand-icon"
+  />
 
-          <span>
-            PDF<span className="brand-light">Shelf</span>
-          </span>
-        </a>
+  <span>
+    PDF<span className="brand-light">Shelf</span>
+  </span>
+</a>
 
         <nav
           className={`nav-links ${
@@ -675,9 +677,11 @@ const handleCopyUpi = async () => {
       {/* Footer */}
       <footer className="footer">
         <a href="#" className="brand">
-          <span className="brand-icon">
-            <BookOpen size={19} />
-          </span>
+          <img
+  src="/pdfshelf-icon.png"
+  alt="PDFShelf icon"
+  className="brand-icon"
+/>
 
           <span>
             PDF<span className="brand-light">Shelf</span>
