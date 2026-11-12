@@ -63,10 +63,16 @@ export default function AdminLogin() {
   return (
     <main className="admin-login-page">
       <section className="admin-login-card">
-        <div className="admin-login-brand">
-          <div className="admin-login-logo">P</div>
-          <span>PDFShelf</span>
-        </div>
+        <div className="login-brand">
+  <img
+    src="/pdfshelf-icon.png"
+    alt="PDFShelf"
+    className="login-brand-logo"
+  />
+  <span>
+    PDF<span className="brand-light">Shelf</span>
+  </span>
+</div>
 
         <div className="admin-login-heading">
           <div className="admin-login-lock">

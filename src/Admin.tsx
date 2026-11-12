@@ -31,6 +31,10 @@ import "./assets/Admin.css";
 type Category = {
   id: string;
   name: string;
+  slug: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
 };
 
 type Product = {
@@ -93,6 +97,13 @@ function Admin() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
 
+  // Category management
+const [showCategoryModal, setShowCategoryModal] = useState(false);
+const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+const [categoryName, setCategoryName] = useState("");
+const [categoryDescription, setCategoryDescription] = useState("");
+const [categorySaving, setCategorySaving] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pageError, setPageError] = useState("");
@@ -147,9 +158,9 @@ function Admin() {
           .order("created_at", { ascending: false }),
 
         supabase
-          .from("categories")
-          .select("id, name")
-          .order("name", { ascending: true }),
+  .from("categories")
+  .select("id, name, slug, description, is_active, created_at")
+  .order("name", { ascending: true }),
       ]);
 
       if (productResult.error) throw productResult.error;
@@ -244,7 +255,160 @@ function Admin() {
 
     return path;
   }
+// Open the Add Category form
+function openAddCategory() {
+  setEditingCategory(null);
+  setCategoryName("");
+  setCategoryDescription("");
+  setPageError("");
+  setMessage("");
+  setShowCategoryModal(true);
+}
 
+// Open the Edit Category form
+function openEditCategory(category: Category) {
+  setEditingCategory(category);
+  setCategoryName(category.name);
+  setCategoryDescription(category.description || "");
+  setPageError("");
+  setMessage("");
+  setShowCategoryModal(true);
+}
+
+// Save a new or edited category
+async function handleSaveCategory(
+  event: React.FormEvent<HTMLFormElement>
+) {
+  event.preventDefault();
+
+  if (!categoryName.trim()) {
+    setPageError("Please enter a category name.");
+    return;
+  }
+
+  setCategorySaving(true);
+  setPageError("");
+  setMessage("");
+
+  try {
+    const categoryData = {
+      name: categoryName.trim(),
+      slug: editingCategory
+        ? editingCategory.slug
+        : makeSlug(categoryName),
+      description: categoryDescription.trim(),
+    };
+
+    if (editingCategory) {
+      const { error } = await supabase
+        .from("categories")
+        .update(categoryData)
+        .eq("id", editingCategory.id);
+
+      if (error) throw error;
+
+      setMessage("Category updated successfully.");
+    } else {
+      const { error } = await supabase
+        .from("categories")
+        .insert({
+          ...categoryData,
+          is_active: true,
+        });
+
+      if (error) throw error;
+
+      setMessage("Category added successfully.");
+    }
+
+    setShowCategoryModal(false);
+    await loadData();
+  } catch (error) {
+    setPageError(
+      error instanceof Error
+        ? error.message
+        : "Unable to save category."
+    );
+  } finally {
+    setCategorySaving(false);
+  }
+}
+
+// Activate or deactivate a category
+async function toggleCategoryStatus(category: Category) {
+  setPageError("");
+  setMessage("");
+
+  try {
+    const { error } = await supabase
+      .from("categories")
+      .update({ is_active: !category.is_active })
+      .eq("id", category.id);
+
+    if (error) throw error;
+
+    setMessage(
+      category.is_active
+        ? "Category deactivated."
+        : "Category activated."
+    );
+
+    await loadData();
+  } catch (error) {
+    setPageError(
+      error instanceof Error
+        ? error.message
+        : "Unable to update category status."
+    );
+  }
+}
+
+// Delete a category if no products are assigned to it
+async function deleteCategory(category: Category) {
+  const { count, error: countError } = await supabase
+    .from("products")
+    .select("id", { count: "exact", head: true })
+    .eq("category_id", category.id);
+
+  if (countError) {
+    setPageError(countError.message);
+    return;
+  }
+
+  if ((count || 0) > 0) {
+    setPageError(
+      "This category has products assigned to it. Reassign those products before deleting it."
+    );
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Delete the category "${category.name}" permanently?`
+  );
+
+  if (!confirmed) return;
+
+  setPageError("");
+  setMessage("");
+
+  try {
+    const { error } = await supabase
+      .from("categories")
+      .delete()
+      .eq("id", category.id);
+
+    if (error) throw error;
+
+    setMessage("Category deleted successfully.");
+    await loadData();
+  } catch (error) {
+    setPageError(
+      error instanceof Error
+        ? error.message
+        : "Unable to delete category."
+    );
+  }
+}
   async function handleSaveProduct(
     event: React.FormEvent<HTMLFormElement>
   ) {
@@ -473,13 +637,15 @@ function Admin() {
     <div className="admin-layout">
       <aside className={`admin-sidebar ${mobileOpen ? "sidebar-open" : ""}`}>
         <a href="/" className="admin-brand">
-          <span className="admin-brand-icon">
-            <BookOpen size={20} />
-          </span>
-          <span>
-            PDF<span>Shelf</span>
-          </span>
-        </a>
+  <img
+    src="/pdfshelf-icon.png"
+    alt="PDFShelf"
+    className="admin-brand-logo"
+  />
+  <span>
+    PDF<span>Shelf</span>
+  </span>
+</a>
 
         <div className="sidebar-label">WORKSPACE</div>
 
@@ -726,34 +892,139 @@ function Admin() {
             </>
           )}
 
-          {active !== "Overview" && active !== "Products" && (
-            <div className="admin-panel placeholder-panel">
-              <div className="placeholder-icon">
-                {active === "Orders" ? (
-                  <ShoppingCart />
-                ) : active === "Customers" ? (
-                  <Users />
-                ) : active === "Categories" ? (
-                  <Tags />
-                ) : (
-                  <Settings />
-                )}
-              </div>
+          
+{active === "Categories" ? (
+  <div className="admin-panel">
+    <div className="category-page-header">
+      <div>
+        <h2>Categories</h2>
+        <p>Organize your PDF library into categories.</p>
+      </div>
 
-              <h2>{active} management</h2>
-              <p>
-                This section will be connected to your database in a later
-                development phase.
-              </p>
+      
+<button
+  type="button"
+  className="admin-primary"
+  onClick={openAddCategory}
+>
+  <Plus size={17} />
+  Add Category
+</button>
 
-              <button
-                className="admin-primary"
-                onClick={() => setActive("Overview")}
-              >
-                Back to overview
-              </button>
-            </div>
+    </div>
+
+    {pageError && (
+      <div className="admin-error">{pageError}</div>
+    )}
+
+    {message && (
+      <div className="admin-success">{message}</div>
+    )}
+
+    <div className="category-table-wrap">
+      <table className="category-table">
+        <thead>
+          <tr>
+            <th>Category Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {categories.length === 0 ? (
+            <tr>
+              <td colSpan={4} className="category-empty">
+                No categories found. Add your first category.
+              </td>
+            </tr>
+          ) : (
+            categories.map((category) => (
+              <tr key={category.id}>
+                <td>
+                  <strong>{category.name}</strong>
+                </td>
+
+                <td>
+                  {category.description || "—"}
+                </td>
+
+                <td>
+                  <span
+                    className={
+                      category.is_active
+                        ? "category-status active"
+                        : "category-status inactive"
+                    }
+                  >
+                    {category.is_active ? "Active" : "Inactive"}
+                  </span>
+                </td>
+
+                <td>
+                  <div className="category-actions">
+                    <button
+                      type="button"
+                      onClick={() => openEditCategory(category)}
+                      title="Edit category"
+                    >
+                      <Pencil size={16} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleCategoryStatus(category)}
+                      title={
+                        category.is_active
+                          ? "Deactivate category"
+                          : "Activate category"
+                      }
+                    >
+                      {category.is_active ? "Deactivate" : "Activate"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => deleteCategory(category)}
+                      title="Delete category"
+                      className="category-delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
           )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+) : active !== "Overview" && active !== "Products" ? (
+  <div className="admin-panel placeholder-panel">
+    <div className="placeholder-icon">
+      {active === "Orders" ? <ShoppingCart /> :
+       active === "Customers" ? <Users /> :
+       <Settings />}
+    </div>
+
+    <h2>{active} management</h2>
+
+    <p>
+      This section will be connected to your database
+      in a later development phase.
+    </p>
+
+    <button
+      className="admin-primary"
+      onClick={() => setActive("Overview")}
+    >
+      Back to overview
+    </button>
+  </div>
+) : null}
+
         </div>
       </main>
 
@@ -900,6 +1171,7 @@ function Admin() {
                 </div>
               )}
 
+
               <div className="modal-actions">
                 <button
                   type="button"
@@ -925,6 +1197,98 @@ function Admin() {
                   ) : (
                     "Save product"
                   )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Category popup - kept separate from the Product form */}
+      {showCategoryModal && (
+        <div
+          className="admin-modal-overlay"
+          onClick={() => {
+            if (!categorySaving) setShowCategoryModal(false);
+          }}
+        >
+          <div
+            className="admin-modal category-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="admin-modal-header">
+              <div>
+                <h2>
+                  {editingCategory ? "Edit Category" : "Add Category"}
+                </h2>
+                <p>
+                  {editingCategory
+                    ? "Update your category details."
+                    : "Create a new category for your PDF library."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="admin-modal-close"
+                onClick={() => setShowCategoryModal(false)}
+                disabled={categorySaving}
+                aria-label="Close category form"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCategory}>
+              <div className="admin-form-group">
+                <label htmlFor="category-name">Category Name *</label>
+                <input
+                  id="category-name"
+                  type="text"
+                  value={categoryName}
+                  onChange={(event) => setCategoryName(event.target.value)}
+                  placeholder="e.g. Technology"
+                  required
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label htmlFor="category-description">Description</label>
+                <textarea
+                  id="category-description"
+                  value={categoryDescription}
+                  onChange={(event) => setCategoryDescription(event.target.value)}
+                  placeholder="Write a short description for this category..."
+                  rows={4}
+                />
+              </div>
+
+              {pageError && (
+                <div className="admin-error-message" role="alert">
+                  {pageError}
+                </div>
+              )}
+
+              <div className="admin-modal-actions">
+                <button
+                  type="button"
+                  className="admin-secondary"
+                  onClick={() => setShowCategoryModal(false)}
+                  disabled={categorySaving}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="admin-primary"
+                  disabled={categorySaving}
+                >
+                  {categorySaving
+                    ? "Saving..."
+                    : editingCategory
+                      ? "Update Category"
+                      : "Add Category"}
                 </button>
               </div>
             </form>

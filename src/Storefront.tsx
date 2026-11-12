@@ -515,15 +515,17 @@ const handleCopyUpi = async () => {
                     className={`product-cover cover-${product.color}`}
                     onClick={() => setSelected(product)}
                     style={
-                      product.coverImageUrl
-                        ? {
-                            backgroundImage:
-                              `linear-gradient(rgba(23,36,59,0.12), rgba(23,36,59,0.12)), url("${product.coverImageUrl}")`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                          }
-                        : undefined
-                    }
+  product.coverImageUrl
+    ? {
+        backgroundImage:
+          `linear-gradient(rgba(23,36,59,0.04), rgba(23,36,59,0.04)), url("${product.coverImageUrl}")`,
+        backgroundSize: "contain",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundColor: "#f1eff4",
+      }
+    : undefined
+}
                   >
                     {product.tag && (
                       <span className="product-tag">
@@ -717,15 +719,17 @@ const handleCopyUpi = async () => {
             <div
               className={`modal-cover cover-${selected.color}`}
               style={
-                selected.coverImageUrl
-                  ? {
-                      backgroundImage:
-                        `url("${selected.coverImageUrl}")`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }
-                  : undefined
-              }
+  selected.coverImageUrl
+    ? {
+        backgroundImage:
+          `url("${selected.coverImageUrl}")`,
+        backgroundSize: "contain",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundColor: "#f1eff4",
+      }
+    : undefined
+}
             >
               {!selected.coverImageUrl && (
                 <div className="cover-design">
